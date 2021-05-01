@@ -126,11 +126,9 @@ Todo: Observation text here.
 sapply(training_set, function(x) sum(is.na(x))) %>% kable() %>% kable_styling()
 ```
 
-
-
 \ 
 
-As we can see from the above table of missing values, three variables contain missing values. The "CAR_AGE" variable has the largest amount of missing variables (510), followed by "YOJ" (454), and finally "AGE" (6).
+As we can see from the above table of missing values, five variables contain missing values. The "CAR_AGE" variable has the largest amount of missing variables (510), followed by "HOME_VAL" (464), YOJ" (454), "Income" (445), and finally "AGE" (6).
 
 Below is a visual representation of the missing data. 
 
