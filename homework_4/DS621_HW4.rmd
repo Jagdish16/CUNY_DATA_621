@@ -60,9 +60,6 @@ evaluation_set <- read.csv('https://raw.githubusercontent.com/Jagdish16/CUNY_DAT
 
 # Explore the structure of the training dataset.
 str(training_set)
-
-# Remove the INDEX colunmn as it is of no value.
-training_set <- training_set[,setdiff(colnames(training_set), 'INDEX')]
 ```
 
 \ 
@@ -85,10 +82,14 @@ As we can see from the above table, The training dataset contains characters tha
 ```{r, dataExplorationMissingValues}
 sapply(training_set, function(x) sum(is.na(x))) %>% kable() %>% kable_styling()
 ```
+Below is a visual representation of the missing data. 
+
+```{r, dataExplorationMissingValuesVisual}
+vis_miss(training_set)
+```
 
 
-
-\ 
+\clearpage
 
 As we can see from the above table of missing values, three variables contain missing values. The "CAR_AGE" variable has the largest amount of missing variables (510), followed by "YOJ" (454), and finally "AGE" (6).
 
@@ -129,15 +130,6 @@ Todo: Observation text here.
 
 \clearpage
 
-
-Below is a visual representation of the missing data. 
-
-```{r, dataExplorationMissingValuesVisual}
-vis_miss(training_set)
-```
-
-
-\clearpage
 
 ### Distributions
 
