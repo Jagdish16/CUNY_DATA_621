@@ -1,3 +1,18 @@
+---
+title: "Project 3"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(corrplot)
+library(Hmisc)
+library(data.table)
+library(mice)
+```
+
+
 ```{r}
 insurance_training <- read.csv("https://raw.githubusercontent.com/Jagdish16/CUNY_DATA_621/main/homework_4/insurance_training_data.csv", na = c("", "NA"))
 
@@ -10,7 +25,8 @@ insurance_evaluation <- read.csv("https://raw.githubusercontent.com/Jagdish16/CU
 insurance_training <- insurance_training %>%
   select(-INDEX) %>%
   mutate_all(~ str_remove_all(., "\\$|,|z_")) %>% #remove $ | , | _z
-  type.convert(.)  #convert types automatically from chr
+  type.convert(.) %>% #convert types automatically from chr
+  mutate(TARGET_FLAG = as.factor(TARGET_FLAG))
 ```
 
 
@@ -19,8 +35,7 @@ summary(insurance_training)
 
 # creates a list with the correlations and p values only when car was in crash
 corr_data <- insurance_training %>%
-  filter(TARGET_FLAG == 1) %>%
-  mutate(TARGET_FLAG = as.factor(TARGET_FLAG)) %>%
+  filter(TARGET_FLAG == "1") %>%
   mutate(MSTATUS = ifelse(MSTATUS=="Yes", 1, 0)) %>%
   mutate(PARENT1 = ifelse(PARENT1=="Yes", 1, 0)) %>%
   mutate(RED_CAR = ifelse(RED_CAR=="yes", 1, 0)) %>%
@@ -64,4 +79,25 @@ corr_data$r %>%
 ```{r}
 temp <-mice(insurance_training,m=5,meth='pmm',seed=500)
 imputed_insurance <- complete(temp)
+```
+
+
+
+#### Model 1
+
+This model uses all the variables which acts as a guideline on which variables would need to 
+included, excluded, or transformed. 
+
+```{r, fig.show = "hold", out.width="50%"}
+model1 <- imputed_insurance %>%
+  select(-TARGET_AMT) %>%
+  glm(formula = TARGET_FLAG ~ ., family= "binomial", data = .)
+
+summary(model1)
+
+plot(fitted(model1), resid(model1), col = "grey", pch = 20,
+     xlab = "Fitted", ylab = "Residuals", main = "Fitted versus Residuals")
+abline(h = 0, col = "darkorange", lwd = 2)
+qqnorm(resid(model1), main = "Normal Q-Q Plot", col = "darkgrey")
+qqline(resid(model1), col = "dodgerblue", lwd = 2)
 ```
