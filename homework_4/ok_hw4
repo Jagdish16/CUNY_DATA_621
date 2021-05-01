@@ -1,0 +1,67 @@
+```{r}
+insurance_training <- read.csv("https://raw.githubusercontent.com/Jagdish16/CUNY_DATA_621/main/homework_4/insurance_training_data.csv", na = c("", "NA"))
+
+insurance_evaluation <- read.csv("https://raw.githubusercontent.com/Jagdish16/CUNY_DATA_621/main/homework_4/insurance-evaluation-data.csv")
+```
+
+### Data Exploration
+
+```{r}
+insurance_training <- insurance_training %>%
+  select(-INDEX) %>%
+  mutate_all(~ str_remove_all(., "\\$|,|z_")) %>% #remove $ | , | _z
+  type.convert(.)  #convert types automatically from chr
+```
+
+
+```{r}
+summary(insurance_training)
+
+# creates a list with the correlations and p values only when car was in crash
+corr_data <- insurance_training %>%
+  filter(TARGET_FLAG == 1) %>%
+  mutate(TARGET_FLAG = as.factor(TARGET_FLAG)) %>%
+  mutate(MSTATUS = ifelse(MSTATUS=="Yes", 1, 0)) %>%
+  mutate(PARENT1 = ifelse(PARENT1=="Yes", 1, 0)) %>%
+  mutate(RED_CAR = ifelse(RED_CAR=="yes", 1, 0)) %>%
+  mutate(REVOKED = ifelse(REVOKED=="Yes", 1, 0)) %>%
+  select(where(is.numeric)) %>%
+  as.matrix(.) %>%
+  rcorr()
+corr_p <- round(corr_data$P,4)
+# this takes the values and correlations and makes it into a 2 column dataframe
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor  =(cormat)[ut],
+    p = pmat[ut]
+    )
+}
+# sorted the pairs of correlations by their p value to show variables with the biggest
+# relationships, with the p showing the significance value
+sorted_cor <- flattenCorrMatrix(corr_data$r, corr_data$P) %>%
+   arrange(desc(abs(cor)))
+
+#the highest correlations in between variables
+head(sorted_cor)
+
+#correlations with only target variable
+flattenCorrMatrix(corr_data$r, corr_data$P) %>%
+  filter(row == "TARGET_AMT") %>%
+  arrange(desc(abs(cor)))
+
+#correlation plot
+corr_data$r %>%
+  corrplot(., type = "upper", order = "hclust", tl.col = "black")
+
+
+```
+
+### Data Preparation
+
+```{r}
+temp <-mice(insurance_training,m=5,meth='pmm',seed=500)
+imputed_insurance <- complete(temp)
+```
