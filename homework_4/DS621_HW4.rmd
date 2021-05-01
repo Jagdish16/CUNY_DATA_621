@@ -30,6 +30,7 @@ library(corrplot)
 library(reshape2)
 library(e1071)
 library(visdat)
+library(mice)
 ```
 
 
@@ -79,28 +80,36 @@ training_set
 
 As we can see from the above table, The training dataset contains characters that will hinder our calculations so we need to remove or transform these. We will remove dollar signs from the INCOME, HOME_VAL, BLUEBOOK, and OLDCLAIM columns, and transform spaces to underscores in the EDUCATION, JOB, CAR_TYPE, URBANICITY columns.  
 
+### Missing Values
+
+```{r, dataExplorationMissingValues}
+sapply(training_set, function(x) sum(is.na(x))) %>% kable() %>% kable_styling()
+```
+
+
+
+\ 
+
+As we can see from the above table of missing values, three variables contain missing values. The "CAR_AGE" variable has the largest amount of missing variables (510), followed by "YOJ" (454), and finally "AGE" (6).
+
 ```{r, dataExplorationTransformation, echo=FALSE}
-# Remove dollar signs from the INCOME, HOME_VAL, BLUEBOOK, and OLDCLAIM columns by replacing them with empty strings.
-training_set$INCOME <- as.numeric(gsub("[\\$,]", "", training_set$INCOME))
-training_set$HOME_VAL <- as.numeric(gsub("[\\$,]", "", training_set$HOME_VAL))
-training_set$BLUEBOOK <- as.numeric(gsub("[\\$,]", "", training_set$BLUEBOOK))
-training_set$OLDCLAIM <- as.numeric(gsub("[\\$,]", "", training_set$OLDCLAIM))
+#function to prepare dataframe for modeling
+prepare_data = function(df){
+    prepared = df%>%
+    # remove index
+    select(-INDEX) %>%
+    # remove unnecessary characters
+    mutate_all(~ str_remove_all(., "\\$|,|z_")) %>% 
+    type.convert(.)%>%
+    # impute NA values
+    mice(m=5,meth='pmm',seed=500)%>%
+    complete()
+    return(prepared)
+}
 
-# Convert spaces to underscores in the EDUCATION, JOB, CAR_TYPE, and URBANICITY columns.
-training_set$EDUCATION <- gsub(" ", "_", training_set$EDUCATION)
-training_set$JOB <- gsub(' ', '_', training_set$JOB)
-training_set$CAR_TYPE <- gsub(' ', '_', training_set$CAR_TYPE) 
-training_set$URBANICITY <- gsub(' ', '_', training_set$URBANICITY)
+training_set = prepare_data(training_set)
 
-# Remove '<', and 'z_' characters from the MSTATUS, SEX, EDUCATION, JOB, CAR_TYPE, and URBANICITY columns.  
-training_set$MSTATUS <- gsub("[<,z_]", "", training_set$MSTATUS)
-training_set$SEX <- gsub("[<,z_]", "", training_set$SEX)
-training_set$EDUCATION <- gsub("[<,z_]", "", training_set$EDUCATION)
-training_set$JOB <- gsub("[<,z_]", "", training_set$JOB)
-training_set$CAR_TYPE <- gsub("[<,z_]", "", training_set$CAR_TYPE) 
-training_set$URBANICITY <- gsub("[<,z_]", "", training_set$URBANICITY)
-
-training_set
+head(training_set)
 ```
 
 ### Summary Statistics
@@ -120,15 +129,6 @@ Todo: Observation text here.
 
 \clearpage
 
-### Missing Values
-
-```{r, dataExplorationMissingValues}
-sapply(training_set, function(x) sum(is.na(x))) %>% kable() %>% kable_styling()
-```
-
-\ 
-
-As we can see from the above table of missing values, five variables contain missing values. The "CAR_AGE" variable has the largest amount of missing variables (510), followed by "HOME_VAL" (464), YOJ" (454), "Income" (445), and finally "AGE" (6).
 
 Below is a visual representation of the missing data. 
 
@@ -234,14 +234,12 @@ Scatter plots of each variable versus the target variable.
 # Scatter plots for each of the variables against the target.
 col_size = dim(training_set)[2]
 cols = names(training_set)
-for (col in cols[1:col_size-1]) {
+for (col in cols[3:col_size]) {
   plot = training_set %>%
-    ggplot(aes_string(x = col, y = 'target')) +
+    ggplot(aes_string(x = col, y = 'TARGET_FLAG')) +
     geom_point(stat = 'identity') +
-    labs(title = paste(col,'vs.','target'))
-
+    labs(title = paste(col,'vs.','TARGET_FLAG'))
     print(plot)
-}
 
 ```
 
@@ -266,6 +264,11 @@ Using the training data, build at least three different binary logistic regressi
 
 #### Model 3 
 
+```{r}
+model3 = glm(TARGET_FLAG~.-TARGET_AMT-INCOME,training_set,family ='binomial')
+
+summary(model3)
+```
 
 #### Model 4
 
