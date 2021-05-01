@@ -54,8 +54,8 @@ Your objective is to build multiple linear regression and binary logistic regres
 
 ```{r, dataExploration, echo=FALSE}
 # Pull in the provided insurance training and evaluation datasets.
-training_set <- read.csv('./insurance_training_data.csv')
-evaluation_set <- read.csv('./insurance-evaluation-data.csv')
+training_set <- read.csv('https://raw.githubusercontent.com/Jagdish16/CUNY_DATA_621/main/homework_4/insurance_training_data.csv')
+evaluation_set <- read.csv('https://raw.githubusercontent.com/Jagdish16/CUNY_DATA_621/main/homework_4/insurance-evaluation-data.csv')
 
 # Explore the structure of the training dataset.
 str(training_set)
