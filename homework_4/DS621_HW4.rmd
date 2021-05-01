@@ -262,75 +262,17 @@ Using the training data, build at least three different binary logistic regressi
 
 #### Model 1
 
-This model uses all of the variables and acts as a guide to which variables need to be included, excluded, or transformed.
-The `nox` variable has the greatest affect on the target variable, but the coefficients do not make sense as the intercept is out of bounds.
-
-```{r modelOne, fig.show="hold", out.width="50%", echo=FALSE}
-model1 <- glm(target ~  ., family = "binomial", data = training_set)
-
-summary(model1)
-
-plot(fitted(model1), resid(model1), col = "grey", pch = 20,
-     xlab = "Fitted", ylab = "Residuals", main = "Fitted versus Residuals")
-abline(h = 0, col = "darkorange", lwd = 2)
-qqnorm(resid(model1), main = "Normal Q-Q Plot", col = "darkgrey")
-qqline(resid(model1), col = "dodgerblue", lwd = 2)
-```
 
 #### Model 2
 
-- Log/sqrt was applied to `age` and `lstat` as they were skewed.
-- `rm` was removed since it had a high p value.
-
-```{r modelTwo, fig.show = "hold", out.width="50%", echo=FALSE}
-model2 <- glm(target ~ zn + indus + chas + nox +  sqrt(age) + dis + rad + tax + ptratio + 
-                sqrt(lstat) + medv, family = "binomial", data = training_set)
-
-summary(model2)
-
-plot(fitted(model2), resid(model2), col = "grey", pch = 20,
-     xlab = "Fitted", ylab = "Residuals", main = "Fitted versus Residuals")
-abline(h = 0, col = "darkorange", lwd = 2)
-qqnorm(resid(model2), main = "Normal Q-Q Plot", col = "darkgrey")
-qqline(resid(model2), col = "dodgerblue", lwd = 2)
-```
 
 #### Model 3 
 
-- Log/sqrt was applied to `age` and `stat` as they were skewed.
-- `rm` was removed since it had a high p value.
-- `lstat` was removed due to high p value
-- ratio of `rad`/`tax`, the full value property tax value squared per index of accessibility to radial highways
-- `indus` was removed 
-
-```{r modelThree, fig.show = "hold", out.width="50%", echo=FALSE}
-model3 <- glm(target ~ zn  + chas + nox +  sqrt(age) + dis + rad + tax + ptratio + 
-                 medv + I(rad/tax^2), family = "binomial", data = training_set)
-
-summary(model3)
-
-plot(fitted(model3), resid(model3), col = "grey", pch = 20,
-     xlab = "Fitted", ylab = "Residuals", main = "Fitted versus Residuals")
-abline(h = 0, col = "darkorange", lwd = 2)
-qqnorm(resid(model3), main = "Normal Q-Q Plot", col = "darkgrey")
-qqline(resid(model3), col = "dodgerblue", lwd = 2)
-```
 
 #### Model 4
 
-- remove `chas` variable because it is a binary variable
 
-```{r chasVariableRemove,  echo=FALSE}
-model4 = glm(target~.-chas,training_set,family = "binomial")
-
-summary(model4)
-
-plot(fitted(model4), resid(model4), col = "grey", pch = 20,
-     xlab = "Fitted", ylab = "Residuals", main = "Fitted versus Residuals")
-abline(h = 0, col = "darkorange", lwd = 2)
-qqnorm(resid(model4), main = "Normal Q-Q Plot", col = "darkgrey")
-qqline(resid(model4), col = "dodgerblue", lwd = 2)
-```
+#### Model 5
 
 \clearpage
 
@@ -355,11 +297,10 @@ to_binary=function(arr,thresh){
 
 
 # Predictions based on a threshhold of 0.5.
-predictions = training_set[c('target')]
+predictions = training_set[c('TARGET_FLAG')]
 predictions$model1 = to_binary(predict(model1,type ='response'),0.5)
 predictions$model2 = to_binary(predict(model2,type ='response'),0.5)
 predictions$model3 = to_binary(predict(model3,type ='response'),0.5)
-predictions$model4 = to_binary(predict(model4,type ='response'),0.5)
 
 ```
 
@@ -372,8 +313,7 @@ predictions = predictions %>%
   mutate(target = as.factor(target),
          model1 = as.factor(model1),
          model2 = as.factor(model2),
-         model3 = as.factor(model3),
-         model4 = as.factor(model4)
+         model3 = as.factor(model3)
          )
 ```
 
@@ -399,13 +339,6 @@ confusionMatrix(predictions$model2,predictions$target)
 confusionMatrix(predictions$model3,predictions$target)
 ```
 
-### Model 4 Confusion Matrix
-
-
-```{r, echo = FALSE}
-# Model 4.
-confusionMatrix(predictions$model4,predictions$target)
-```
 \clearpage
 
 ### Model Comparison
@@ -484,7 +417,6 @@ f1_score <- function(col1, col2) {
 roc_model1 <- roc(predictions$target, as.numeric(predictions$model1))
 roc_model2 <- roc(predictions$target, as.numeric(predictions$model2))
 roc_model3 <- roc(predictions$target, as.numeric(predictions$model3))
-roc_model4 <- roc(predictions$target, as.numeric(predictions$model4))
 
 
 #accuracy
@@ -527,14 +459,6 @@ model_comparison
 
 ### Model of Choice
 
-Since Model 4 has the highest sensitivity rate we will be picking that model to predict on the evaluation set. 
-This means that it has the smallest false negative rate.
-
-```{r predictionsTwo, echo=FALSE}
-evaluation_set$predictions = to_binary(predict(model4, evaluation_set,type = 'response'), 0.5)
-
-head(evaluation_set)
-```
 
 \clearpage
 
