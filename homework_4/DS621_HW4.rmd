@@ -96,9 +96,9 @@ As we can see from the above table of missing values, three variables contain mi
 ```{r, dataExplorationTransformation, echo=FALSE}
 #function to prepare dataframe for modeling
 prepare_data = function(df){
-    prepared = df%>%
+    prepared = df[-1]%>%
     # remove index
-    select(-INDEX) %>%
+    #select(-INDEX) %>%
     # remove unnecessary characters
     mutate_all(~ str_remove_all(., "\\$|,|z_")) %>% 
     type.convert(.)%>%
@@ -185,7 +185,7 @@ Todo: Observation text here.
 
 ### Correlations
 
-```{r, dataCorrelation, echo=FALSE}
+```{r, dataCorrelation, echo=FALSE}`
 cor_table <- cbind(training_set[13], training_set[1:12]) %>% data.frame()
 correlation_table <- cor(cor_table, method = 'pearson', use = 'complete.obs')[,1]
 correlation_table %>%
@@ -266,6 +266,37 @@ summary(model3)
 
 
 #### Model 5
+
+Boxcox method
+
+```{r}
+# applying boxcox method on the data set with rows that had an accident
+b <- boxcox(TARGET_AMT ~ . -TARGET_FLAG, data = training_set %>% filter(TARGET_FLAG == 1))
+
+
+# find optimal lambda
+lamda <- b$x
+lik <- b$y
+bc <- cbind(lamda, lik)
+l <- bc[order(-lik),][1,1]
+
+
+# create model applying lambda to target variable
+model_five <- lm(TARGET_AMT^(l) ~ . -TARGET_FLAG, data = training_set %>% filter(TARGET_FLAG == 1))
+summary(model_five)
+
+
+# graphing residuals
+ggplot(data = model_five, aes(x = .fitted, y = .resid)) +
+  geom_point() + geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(se = FALSE) + xlab("Fitted values") + ylab("Residuals")
+
+ggplot(data = model_five, aes(x = .resid)) + geom_histogram() + xlab("Residuals")
+
+ggplot(data = model_five) + stat_qq(aes(sample = .stdresid)) + geom_abline()
+```
+
+
 
 \clearpage
 
