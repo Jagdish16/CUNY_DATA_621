@@ -315,21 +315,21 @@ predictions = predictions %>%
 
 ```{r, echo = FALSE}
 # Model 1.
-confusionMatrix(predictions$model1,predictions$target)
+confusionMatrix(predictions$model1,predictions$TARGET_FLAG)
 ```
 
 ### Model 2 Confusion Matrix
 
 ```{r, echo = FALSE}
 # Model 2.
-confusionMatrix(predictions$model2,predictions$target)
+confusionMatrix(predictions$model2,predictions$TARGET_FLAG)
 ```
 
 ### Model 3 Confusion Matrix
 
 ```{r, echo = FALSE}
 # Model 3.
-confusionMatrix(predictions$model3,predictions$target)
+confusionMatrix(predictions$model3,predictions$TARGET_FLAG)
 ```
 
 \clearpage
