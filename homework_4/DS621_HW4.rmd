@@ -248,10 +248,31 @@ There are no missing values in the dataset so there is no need to impute values.
 
 Using the training data, build at least three different binary logistic regression models, using different variables (or the same variables with different transformations).
 
+#### Baseline Model
+
+```{r baseLineModel, echo = FALSE}
+# Disable scientific numbers for readability purposes.
+options(scipen = 999)
+
+# Generate a model that contains all predictors.
+baseline_model <- glm(TARGET_FLAG ~., data = training_set, family = 'binomial')
+summary(baseline_model)
+```
+
 #### Model 1
 
 
 #### Model 2
+
+In this model, we removed variables that appear to be insignificant.
+
+```{r model2, echo = FALSE}
+# Disable scientific numbers for readability purposes.
+options(scipen = 999)
+
+model_2 = glm(TARGET_FLAG ~ INCOME + PARENT1 + HOME_VAL + MSTATUS + EDUCATION + TRAVTIME + CAR_USE + TIF + CAR_TYPE + REVOKED + URBANICITY, data = training_set, family = 'binomial')
+summary(model_2)
+```
 
 
 #### Model 3 
