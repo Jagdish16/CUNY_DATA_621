@@ -84,7 +84,7 @@ As we can see from the above table, The training dataset contains characters tha
 
 Also the target variable TARGET_FLAG is actually a boolean variable. So it is better to convert it to a factor from its numeric data type.
 
-```{r, dataExplorationTransformation, echo=FALSE}
+```{r, trainingDataExplorationTransformation, echo=FALSE}
 
 # Convert TARGET_FLAG from integer to factor
 training_set$TARGET_FLAG<-as.factor(training_set$TARGET_FLAG)
@@ -196,7 +196,7 @@ head(training_set)
 
 Todo: Summary intro text here.
 
-```{r, dataExplorationSummary, echo=FALSE}
+```{r, dataExplorationSummary2, echo=FALSE}
 # Summarize the training dataset.
 summary(training_set)
 ```
